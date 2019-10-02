@@ -1,8 +1,9 @@
 import pygame
+
 pygame.init()
 tela = pygame.display.set_mode((800, 640), 0)
-x = 50
-y = 50
+x = 0
+y = 0
 velX = 0
 velY = 0
 while True:
@@ -23,5 +24,12 @@ while True:
     for e in pygame.event.get():
         if e.type == pygame.QUIT:
             exit()
-        if e.type == pygame.MOUSEMOTION:
-            x, y = e.pos
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_DOWN:
+                velY = 1
+            elif e.key == pygame.K_UP:
+                velY = -1
+            elif e.key == pygame.K_LEFT:
+                velX = -1
+            elif e.key == pygame.K_RIGHT:
+                velX = 1
