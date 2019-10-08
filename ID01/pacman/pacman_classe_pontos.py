@@ -1,13 +1,61 @@
 import pygame
+from abc import ABCMeta, abstractmethod
 pygame.init()
 screen = pygame.display.set_mode((800, 600), 0)
 AMARELO = (255, 255, 0)
 PRETO = (0, 0, 0)
 AZUL = (0, 0, 255)
-VELOCIDADE = 0.5
+VELOCIDADE = 0.1
 
 
-class Cenario:
+class ElementoJogo(metaclass=ABCMeta):
+    @abstractmethod
+    def pintar(self, tela, tamanho):
+        pass
+
+    @abstractmethod
+    def calcular_regras(self):
+        pass
+
+    @abstractmethod
+    def processar_eventos(self, eventos):
+        pass
+
+
+class Validador(metaclass=ABCMeta):
+    @abstractmethod
+    def validar(self, elemento):
+        return True
+
+
+class Validavel(metaclass=ABCMeta):
+    @abstractmethod
+    def get_linha(self):
+        pass
+
+    @abstractmethod
+    def get_coluna(self):
+        pass
+
+    @abstractmethod
+    def aceitar(self):
+        pass
+
+class Pontuavel(metaclass=ABCMeta):
+    @abstractmethod
+    def get_pontos(self):
+        pass
+
+    @abstractmethod
+    def adicionar_pontos(self, pontos):
+        pass
+
+    @abstractmethod
+    def remover_pontos(self, pontos):
+        pass
+
+
+class Cenario(ElementoJogo, Validador):
     def __init__(self):
         self.cenario = [
             [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
@@ -57,40 +105,50 @@ class Cenario:
             if evento.type == pygame.QUIT:
                 exit()
 
+    def validar(self, elemento):
+        coluna = elemento.get_coluna()
+        linha = elemento.get_linha()
+        celula = self.cenario[linha][coluna]
+        if celula != 2:
+            elemento.aceitar()
+        if isinstance(elemento, Pontuavel) and celula == 1:
+            elemento.adicionar_pontos(1)
+            self.cenario[linha][coluna] = 0
 
-class Pacman:
+class Pacman(ElementoJogo, Validavel, Pontuavel):
     def __init__(self):
-        self.px = 400
-        self.py = 300
-        self.velx = 1
-        self.vely = 1
+        self.x = 1
+        self.y = 1
+        self.velx = 0
+        self.vely = 0
+        self.x_temp = self.x
+        self.y_temp = self.y
+        self.pontos = 0
 
     def calcular_regras(self):
-        if self.px < 0 or self.px > 800:
-            self.velx = self.velx * -1
-        if self.py < 0 or self.py > 640:
-            self.vely = self.vely * -1
-        self.px = self.px + self.velx
-        self.py = self.py + self.vely
+        self.x_temp = self.x + self.velx
+        self.y_temp = self.y + self.vely
 
     def pintar(self, tela, tamanho):
         # Desenha o pacman
-        corpo_x = round(self.px) + (tamanho // 2)
-        corpo_y = round(self.py) + (tamanho // 2)
+        px = round(self.x) * tamanho
+        py = round(self.y) * tamanho
+        corpo_x = round(px) + (tamanho // 2)
+        corpo_y = round(py) + (tamanho // 2)
         corpo_raio = tamanho // 2
         pygame.draw.circle(tela, AMARELO, (corpo_x, corpo_y), corpo_raio, 0)
 
         # Desenha o recorte da boca
-        boca_labio_inferior = (self.px + tamanho, corpo_y)
+        boca_labio_inferior = (px + tamanho, corpo_y)
         boca_fundo = (corpo_x, corpo_y)
-        boca_labio_superior = (self.px + tamanho, self.py)
+        boca_labio_superior = (px + tamanho, py)
 
         polygon = [boca_fundo, boca_labio_inferior, boca_labio_superior]
         pygame.draw.polygon(tela, PRETO, polygon, 0)
 
         # Desenha o olho
-        olho_x = round(self.px + tamanho // 1.7)
-        olho_y = round(self.py + tamanho / 5)
+        olho_x = round(px + tamanho // 1.7)
+        olho_y = round(py + tamanho / 5)
         olho_raio = tamanho // 10
         pygame.draw.circle(tela, PRETO, (olho_x, olho_y), olho_raio, 0)
 
@@ -117,27 +175,74 @@ class Pacman:
                 elif evento.key == pygame.K_RIGHT:
                     self.velx = 0.0
 
+    def aceitar(self):
+        self.x = self.x_temp
+        self.y = self.y_temp
 
-if __name__ == "__main__":
-    tamanho = 36
-    pacman = Pacman()
-    cenario = Cenario()
-    # Loop do Jogo
-    while True:
-        # Calcular as regras
-        cenario.calcular_regras()
-        pacman.calcular_regras()
+    def get_coluna(self):
+        return round(self.x_temp)
 
-        # Pintar a tela
-        screen.fill(PRETO)
-        cenario.pintar(screen, tamanho)
-        pacman.pintar(screen, tamanho)
+    def get_linha(self):
+        return round(self.y_temp)
+
+    def get_pontos(self):
+        return self.pontos
+
+    def adicionar_pontos(self, pontos):
+        self.pontos += pontos
+        print(self.pontos)
+
+    def remover_pontos(self, pontos):
+        self.pontos -= pontos
+
+
+class Jogo:
+    def __init__(self):
+        pygame.init()
+        self.elementos = []
+        self.validador = None
+        self.tela = pygame.display.set_mode((800, 640), 0)
+        self.PPC = (640 // 16) - 2
+
+    def set_validador(self, validador):
+        self.validador = validador
+
+    def adicionar_elemento(self, elemento):
+        self.elementos.append(elemento)
+
+    def remover_elemento(self, elemento):
+        self.elementos.remove(elemento)
+
+    def calcular_regras(self):
+        for elemento in self.elementos:
+            elemento.calcular_regras()
+            if self.validador is not None and isinstance(elemento, Validavel):
+                self.validador.validar(elemento)
+
+    def pintar(self):
+        self.tela.fill(PRETO)
+        for elemento in self.elementos:
+            elemento.pintar(self.tela, self.PPC)
         pygame.display.update()
 
-        # Capturar eventos
-        ev = pygame.event.get()
-        pacman.processar_eventos(ev)
-        cenario.processar_eventos(ev)
+    def processar_eventos(self):
+        eventos = pygame.event.get()
+        for elemento in self.elementos:
+            elemento.processar_eventos(eventos)
+
+    def loop_jogo(self):
+        while True:
+            self.calcular_regras()
+            self.pintar()
+            self.processar_eventos()
 
 
+if __name__ == "__main__":
+    jogo = Jogo()
+    cenario = Cenario()
+    pacman = Pacman()
 
+    jogo.adicionar_elemento(cenario)
+    jogo.adicionar_elemento(pacman)
+    jogo.set_validador(cenario)
+    jogo.loop_jogo()

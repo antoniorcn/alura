@@ -50,15 +50,26 @@ class Bolinha(ElementoJogo):
 
     def processar_eventos(self, eventos):
         for evento in eventos:
+            if evento.type == pygame.QUIT:
+                exit()
             if evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_DOWN:
-                    self.velY = 1
+                    self.vely = ACERELERACAO
                 elif evento.key == pygame.K_UP:
-                    self.velY = -1
+                    self.vely = -ACERELERACAO
                 elif evento.key == pygame.K_LEFT:
-                    self.velX = -1
+                    self.velx = -ACERELERACAO
                 elif evento.key == pygame.K_RIGHT:
-                    self.velX = 1
+                    self.velx = ACERELERACAO
+            if evento.type == pygame.KEYUP:
+                if evento.key == pygame.K_DOWN:
+                    self.vely = 0.0
+                elif evento.key == pygame.K_UP:
+                    self.vely = 0.0
+                elif evento.key == pygame.K_LEFT:
+                    self.velx = 0.0
+                elif evento.key == pygame.K_RIGHT:
+                    self.velx = 0.0
 
 
 class Jogo:

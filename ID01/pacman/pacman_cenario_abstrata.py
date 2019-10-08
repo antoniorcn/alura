@@ -1,4 +1,5 @@
 import pygame
+from abc import ABCMeta, abstractmethod
 pygame.init()
 screen = pygame.display.set_mode((800, 600), 0)
 AMARELO = (255, 255, 0)
@@ -6,8 +7,21 @@ PRETO = (0, 0, 0)
 AZUL = (0, 0, 255)
 VELOCIDADE = 0.5
 
+class ElementoJogo(metaclass=ABCMeta):
+    @abstractmethod
+    def pintar(self, tela, tamanho):
+        pass
 
-class Cenario:
+    @abstractmethod
+    def calcular_regras(self):
+        pass
+
+    @abstractmethod
+    def processar_eventos(self, eventos):
+        pass
+
+
+class Cenario(ElementoJogo):
     def __init__(self):
         self.cenario = [
             [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
@@ -58,12 +72,12 @@ class Cenario:
                 exit()
 
 
-class Pacman:
+class Pacman(ElementoJogo):
     def __init__(self):
         self.px = 400
         self.py = 300
-        self.velx = 1
-        self.vely = 1
+        self.velx = 0
+        self.vely = 0
 
     def calcular_regras(self):
         if self.px < 0 or self.px > 800:

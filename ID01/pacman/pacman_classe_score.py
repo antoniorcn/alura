@@ -1,17 +1,16 @@
 import pygame
-
 from abc import ABCMeta, abstractmethod
-
-AZUL = (0, 0, 255)
-PRETO = (0, 0, 0)
+pygame.init()
+screen = pygame.display.set_mode((800, 600), 0)
 AMARELO = (255, 255, 0)
-
-VELOCIDADE = 0.05
+PRETO = (0, 0, 0)
+AZUL = (0, 0, 255)
+VELOCIDADE = 0.1
 
 
 class ElementoJogo(metaclass=ABCMeta):
     @abstractmethod
-    def pintar(self, tela, ppc):
+    def pintar(self, tela, tamanho):
         pass
 
     @abstractmethod
@@ -120,62 +119,62 @@ class Cenario(ElementoJogo, Validador):
 
 class Pacman(ElementoJogo, Validavel, Pontuavel):
     def __init__(self):
-        self.x = 1.0
-        self.y = 1.0
-        self.velx = 0.0
-        self.vely = 0.0
+        self.x = 1
+        self.y = 1
+        self.velx = 0
+        self.vely = 0
         self.x_temp = self.x
         self.y_temp = self.y
         self.pontos = 0
-
-    def pintar(self, tela, ppc):
-        # Desenha o pacman
-        px = round(self.x) * ppc  # X do canto superior esquerdo
-        py = round(self.y) * ppc  # Y do canto superior esquerdo
-        # print("X({})  Y({})   TEMP_X({})   TEMP_Y({})  pX({})  pY({})"
-        #      .format(round(self.x), round(self.y), self.x_temp, self.y_temp, px, py))
-        corpo_x = px + (ppc // 2)
-        corpo_y = py + (ppc // 2)
-        corpo_raio = ppc // 2
-        pygame.draw.circle(tela, AMARELO, (corpo_x, corpo_y), corpo_raio, 0)
-
-        # Desenha o recorte da boca
-        boca_labio_inferior = (px + ppc, corpo_y)
-        boca_fundo = (corpo_x, corpo_y)
-        boca_labio_superior = (px + ppc, py)
-
-        polygon = [boca_fundo, boca_labio_inferior, boca_labio_superior]
-        pygame.draw.polygon(tela, PRETO, polygon, 0)
-
-        # Desenha o olho
-        olho_x = px + round(ppc // 1.7)
-        olho_y = py + round(ppc / 5)
-        olho_raio = ppc // 10
-        pygame.draw.circle(tela, PRETO, (olho_x, olho_y), olho_raio, 0)
 
     def calcular_regras(self):
         self.x_temp = self.x + self.velx
         self.y_temp = self.y + self.vely
 
+    def pintar(self, tela, tamanho):
+        # Desenha o pacman
+        px = round(self.x) * tamanho
+        py = round(self.y) * tamanho
+        corpo_x = round(px) + (tamanho // 2)
+        corpo_y = round(py) + (tamanho // 2)
+        corpo_raio = tamanho // 2
+        pygame.draw.circle(tela, AMARELO, (corpo_x, corpo_y), corpo_raio, 0)
+
+        # Desenha o recorte da boca
+        boca_labio_inferior = (px + tamanho, corpo_y)
+        boca_fundo = (corpo_x, corpo_y)
+        boca_labio_superior = (px + tamanho, py)
+
+        polygon = [boca_fundo, boca_labio_inferior, boca_labio_superior]
+        pygame.draw.polygon(tela, PRETO, polygon, 0)
+
+        # Desenha o olho
+        olho_x = round(px + tamanho // 1.7)
+        olho_y = round(py + tamanho / 5)
+        olho_raio = tamanho // 10
+        pygame.draw.circle(tela, PRETO, (olho_x, olho_y), olho_raio, 0)
+
     def processar_eventos(self, eventos):
-        for e in eventos:
-            if e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_DOWN:
+        for evento in eventos:
+            if evento.type == pygame.QUIT:
+                exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_DOWN:
                     self.vely = VELOCIDADE
-                elif e.key == pygame.K_UP:
+                elif evento.key == pygame.K_UP:
                     self.vely = -VELOCIDADE
-                elif e.key == pygame.K_LEFT:
+                elif evento.key == pygame.K_LEFT:
                     self.velx = -VELOCIDADE
-                elif e.key == pygame.K_RIGHT:
+                elif evento.key == pygame.K_RIGHT:
                     self.velx = VELOCIDADE
-            if e.type == pygame.KEYUP:
-                if e.key == pygame.K_DOWN:
+            if evento.type == pygame.KEYUP:
+                if evento.key == pygame.K_DOWN:
                     self.vely = 0.0
-                elif e.key == pygame.K_UP:
+                elif evento.key == pygame.K_UP:
                     self.vely = 0.0
-                elif e.key == pygame.K_LEFT:
+                elif evento.key == pygame.K_LEFT:
                     self.velx = 0.0
-                elif e.key == pygame.K_RIGHT:
+                elif evento.key == pygame.K_RIGHT:
                     self.velx = 0.0
 
     def aceitar(self):
@@ -193,7 +192,6 @@ class Pacman(ElementoJogo, Validavel, Pontuavel):
 
     def adicionar_pontos(self, pontos):
         self.pontos += pontos
-        print(self.pontos)
 
     def remover_pontos(self, pontos):
         self.pontos -= pontos
@@ -202,10 +200,10 @@ class Pacman(ElementoJogo, Validavel, Pontuavel):
 class Jogo:
     def __init__(self):
         pygame.init()
-        self.fonte = pygame.font.SysFont("arial", 20, True, False)
         self.elementos = []
         self.validador = None
         self.pontuavel = None
+        self.fonte = pygame.font.SysFont("arial", 20, True, False)
         self.tela = pygame.display.set_mode((800, 640), 0)
         self.PPC = (640 // 16) - 2
         self.info_x = 640 + self.PPC
