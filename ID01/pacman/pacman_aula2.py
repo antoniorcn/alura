@@ -33,7 +33,6 @@ class Pacman:
         olho_y = self.y + round(self.tamanho / 5)
         olho_raio = self.tamanho // 10
         pygame.draw.circle(tela, PRETO, (olho_x, olho_y), olho_raio, 0)
-        pygame.display.update()
 
 
 if __name__ == "__main__":
@@ -41,6 +40,7 @@ if __name__ == "__main__":
     while True:
         # Pintar a tela
         pacman.pintar(screen)
+        pygame.display.update()
 
         # Capturar eventos
         for e in pygame.event.get():
