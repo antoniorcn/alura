@@ -74,24 +74,16 @@ class Pacman:
                     self.velx = 0.0
 
     def processar_eventos_mouse(self, eventos):
+        delay = 1000
         for evento in eventos:
             if evento.type == pygame.QUIT:
                 exit()
             if evento.type == pygame.MOUSEMOTION:
-                vx, vy = evento.rel
-                if vx > 0:
-                    self.velx = VELOCIDADE
-                elif vx < 0:
-                    self.velx = -VELOCIDADE
-                else:
-                    self.velx = 0.0
-
-                if vy > 0:
-                    self.vely = VELOCIDADE
-                elif vy < 0:
-                    self.vely = -VELOCIDADE
-                else:
-                    self.vely = 0.0
+                px = self.coluna * self.tamanho
+                py = self.linha * self.tamanho
+                mouse_x, mouse_y = evento.pos
+                self.coluna += (mouse_x - px) / delay
+                self.linha += (mouse_y - py) / delay
 
 
 if __name__ == "__main__":
