@@ -2,8 +2,6 @@ import pygame
 from abc import ABCMeta, abstractmethod
 import random
 pygame.init()
-screen = pygame.display.set_mode((800, 600), 0)
-fonte = pygame.font.SysFont("arial", 20, True, False)
 AMARELO = (255, 255, 0)
 PRETO = (0, 0, 0)
 AZUL = (0, 0, 255)
@@ -343,68 +341,82 @@ class Fantasma(ElementoJogo, Movivel):
             self.direcao = random.choice(direcoes)
 
 
-def pintar_pontos(tela, pontos):
-    pontos_x = TAMANHO * 17
-    score = fonte.render("Score: {}".format(pontos), True, AMARELO)
-    tela.blit(score, (pontos_x, 50))
+class Jogo:
+    def __init__(self, size):
+        pygame.init()
+        self.tela = pygame.display.set_mode(size, 0)
+        self.fonte = pygame.font.SysFont("arial", 20, True, False)
+        self.tamanho = int(size[1] / 16)
+        self.cenario = Cenario(self.tamanho)
+        pacman = Pacman(self.tamanho)
+        blinky = Fantasma(self.tamanho, VERMELHO)
+        clyde = Fantasma(self.tamanho, LARANJA)
+        pinky = Fantasma(self.tamanho, ROSA)
+        inky = Fantasma(self.tamanho, CIANO)
+        self.cenario.adicionar_movivel(pacman)
+        self.cenario.adicionar_movivel(blinky)
+        self.cenario.adicionar_movivel(clyde)
+        self.cenario.adicionar_movivel(pinky)
+        self.cenario.adicionar_movivel(inky)
+        self.elementos = [pacman, blinky, clyde, pinky, inky]
 
+    def calcular_regras(self):
+        self.cenario.calcular_regras()
+        for elemento in self.elementos:
+            elemento.calcular_regras()
 
-def pintar_derrota(tela):
-    texto = fonte.render("G A M E  O V E R", True, VERMELHO)
-    texto_x = (tela.get_width() - texto.get_width()) / 2
-    texto_y = (tela.get_height() - texto.get_height()) / 2
-    tela.blit(texto, (texto_x, texto_y))
+    def pintar_pontos(self):
+        info_x = TAMANHO * 17
+        score = self.fonte.render("Score: {}".format(self.cenario.pontos), True, AMARELO)
+        self.tela.blit(score, (info_x, 50))
 
+    def pintar_derrota(self):
+        texto = self.fonte.render("G A M E  O V E R", True, VERMELHO)
+        texto_x = (self.tela.get_width() - texto.get_width()) / 2
+        texto_y = (self.tela.get_height() - texto.get_height()) / 2
+        self.tela.blit(texto, (texto_x, texto_y))
 
-def pintar_vitoria(tela):
-    texto = fonte.render("P A R A B É N S  -  V O C Ê  V E N C E U !!!", True, AMARELO)
-    texto_x = (tela.get_width() - texto.get_width()) / 2
-    texto_y = (tela.get_height() - texto.get_height()) / 2
-    tela.blit(texto, (texto_x, texto_y))
+    def pintar_vitoria(self):
+        texto = self.fonte.render("P A R A B É N S  -  V O C Ê  V E N C E U !!!", True, AMARELO)
+        texto_x = (self.tela.get_width() - texto.get_width()) / 2
+        texto_y = (self.tela.get_height() - texto.get_height()) / 2
+        self.tela.blit(texto, (texto_x, texto_y))
+
+    def pintar(self):
+        self.cenario.pintar(self.tela)
+        for elemento in self.elementos:
+            elemento.pintar(self.tela)
+
+    def processar_eventos(self):
+        global ESTADO
+        ev = pygame.event.get()
+        self.cenario.processar_eventos(ev)
+        if ESTADO == 0:
+            for elemento in self.elementos:
+                elemento.processar_eventos(ev)
+
+    def loop_jogo(self):
+        global ESTADO
+        while True:
+            # Calcular regras
+            if ESTADO == 0:
+                self.calcular_regras()
+
+            # Pintar a tela
+            self.tela.fill(PRETO)
+            self.pintar()
+            self.pintar_pontos()
+            if ESTADO == 1:
+                self.pintar_derrota()
+            elif ESTADO == 2:
+                self.pintar_vitoria()
+            pygame.display.update()
+            pygame.time.delay(100)
+
+            # Capturar eventos
+            self.processar_eventos()
 
 
 if __name__ == "__main__":
-    pacman = Pacman(TAMANHO)
-    blinky = Fantasma(TAMANHO, VERMELHO)
-    clyde = Fantasma(TAMANHO, LARANJA)
-    pinky = Fantasma(TAMANHO, ROSA)
-    inky = Fantasma(TAMANHO, CIANO)
-    cenario = Cenario(TAMANHO)
-    cenario.adicionar_movivel(pacman)
-    cenario.adicionar_movivel(blinky)
-    cenario.adicionar_movivel(clyde)
-    cenario.adicionar_movivel(pinky)
-    cenario.adicionar_movivel(inky)
-
-    while True:
-        if ESTADO == 0:
-            # Calcular regras
-            cenario.calcular_regras()
-            pacman.calcular_regras()
-            blinky.calcular_regras()
-            clyde.calcular_regras()
-            pinky.calcular_regras()
-            inky.calcular_regras()
-
-        # Pintar a tela
-        screen.fill(PRETO)
-        cenario.pintar(screen)
-        pacman.pintar(screen)
-        blinky.pintar(screen)
-        clyde.pintar(screen)
-        pinky.pintar(screen)
-        inky.pintar(screen)
-        pintar_pontos(screen, cenario.pontos)
-        if ESTADO == 1:
-            pintar_derrota(screen)
-        elif ESTADO == 2:
-            pintar_vitoria(screen)
-        pygame.display.update()
-        pygame.time.delay(100)
-
-        # Capturar eventos
-        ev = pygame.event.get()
-        cenario.processar_eventos(ev)
-
-        if ESTADO == 0:
-            pacman.processar_eventos(ev)
+    jogo = Jogo((800, 600))
+    jogo.loop_jogo()
