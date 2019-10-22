@@ -353,9 +353,10 @@ class Jogo(ElementoJogo):
             self.cenario.adicionar_movivel(elemento)
 
     def calcular_regras(self):
-        self.cenario.calcular_regras()
-        for elemento in self.elementos:
-            elemento.calcular_regras()
+        if self.cenario.estado == 0:
+            self.cenario.calcular_regras()
+            for elemento in self.elementos:
+                elemento.calcular_regras()
 
     def pintar_pontos(self):
         info_x = ElementoJogo.TAMANHO * 17
@@ -375,13 +376,10 @@ class Jogo(ElementoJogo):
         self.tela.blit(texto, (texto_x, texto_y))
 
     def pintar(self, tela):
-        pass
-
-    def acionar_pintura(self):
-        self.tela.fill(ElementoJogo.PRETO)
+        tela.fill(ElementoJogo.PRETO)
         self.cenario.pintar(self.tela)
         for elemento in self.elementos:
-            elemento.pintar(self.tela)
+            elemento.pintar(tela)
         self.pintar_pontos()
         if self.cenario.estado == 1:
             self.pintar_derrota()
@@ -390,29 +388,22 @@ class Jogo(ElementoJogo):
         pygame.display.update()
 
     def processar_eventos(self, eventos):
-        pass
-
-    def acionar_eventos(self):
-        ev = pygame.event.get()
-        self.cenario.processar_eventos(ev)
+        self.cenario.processar_eventos(eventos)
         if self.cenario.estado == 0:
             for elemento in self.elementos:
-                elemento.processar_eventos(ev)
-
-    def loop_jogo(self):
-        while True:
-            # Calcular regras
-            if self.cenario.estado == 0:
-                self.calcular_regras()
-
-            # Pintar a tela
-            self.acionar_pintura()
-            pygame.time.delay(100)
-
-            # Capturar eventos
-            self.acionar_eventos()
+                elemento.processar_eventos(eventos)
 
 
 if __name__ == "__main__":
     jogo = Jogo((800, 600))
-    jogo.loop_jogo()
+    while True:
+        # Calcular regras
+        jogo.calcular_regras()
+
+        # Pintar a tela
+        jogo.pintar(jogo.tela)
+        pygame.time.delay(100)
+
+        # Capturar eventos
+        ev = pygame.event.get()
+        jogo.processar_eventos(ev)

@@ -1,7 +1,6 @@
 import pygame
 from abc import ABCMeta, abstractmethod
 import random
-pygame.init()
 
 
 class Movivel(metaclass=ABCMeta):
@@ -352,38 +351,29 @@ class Jogo:
         self.tela.blit(score, (info_x, 50))
 
     def pintar(self, tela):
-        pass
-
-    def acionar_pintura(self):
-        self.tela.fill(ElementoJogo.PRETO)
+        tela.fill(ElementoJogo.PRETO)
         self.cenario.pintar(self.tela)
         for elemento in self.elementos:
-            elemento.pintar(self.tela)
+            elemento.pintar(tela)
         self.pintar_pontos()
         pygame.display.update()
 
     def processar_eventos(self, eventos):
-        pass
-
-    def acionar_eventos(self):
-        ev = pygame.event.get()
-        self.cenario.processar_eventos(ev)
+        self.cenario.processar_eventos(eventos)
         for elemento in self.elementos:
-            elemento.processar_eventos(ev)
-
-    def loop_jogo(self):
-        while True:
-            # Calcular regras
-            self.calcular_regras()
-
-            # Pintar a tela
-            self.acionar_pintura()
-            pygame.time.delay(100)
-
-            # Capturar eventos
-            self.acionar_eventos()
+            elemento.processar_eventos(eventos)
 
 
 if __name__ == "__main__":
     jogo = Jogo((800, 600))
-    jogo.loop_jogo()
+    while True:
+        # Calcular regras
+        jogo.calcular_regras()
+
+        # Pintar a tela
+        jogo.pintar(jogo.tela)
+        pygame.time.delay(100)
+
+        # Capturar eventos
+        ev = pygame.event.get()
+        jogo.processar_eventos(ev)
