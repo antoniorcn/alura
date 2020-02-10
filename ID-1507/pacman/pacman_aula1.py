@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 pygame.init()
 screen = pygame.display.set_mode((800, 600), 0)
 
+
 class Movivel(metaclass=ABCMeta):
     @abstractmethod
     def get_pos(self):

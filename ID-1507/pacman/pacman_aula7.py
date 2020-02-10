@@ -1,7 +1,6 @@
 import pygame
 from abc import ABCMeta, abstractmethod
 import random
-pygame.init()
 
 
 class Movivel(metaclass=ABCMeta):

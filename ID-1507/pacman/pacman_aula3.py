@@ -123,27 +123,37 @@ class Cenario(ElementoJogo, ObservadorMovivel):
             direcoes.append(1)  # Norte
         return direcoes
 
-    def checar_esquina(self, coluna, linha):
+    def checar_esquina(self, movivel):
+        coluna, linha, _ = self.get_movivel_info(movivel)
+        # Verificar se chegou em uma esquina
         direcoes = []
         if 0 < linha < 16 and 0 < coluna < 16:
             direcoes = self.get_direcoes(coluna, linha)
-        return direcoes
+        movivel.esquina(direcoes)
+
+    def get_movivel_info(self, movivel):
+        coluna, linha = movivel.get_pos()
+        celula = self.get_celula(coluna, linha)
+        return coluna, linha, celula
+
+    def comer_pontinho(self, movivel):
+        coluna, linha, celula = self.get_movivel_info(movivel)
+        # Comer pontinhos apenas se for o Pacman
+        if isinstance(movivel, Pacman) and celula == 1:
+            self.cenario[int(linha)][int(coluna)] = 0
+
+    def verificar_movivel(self, movivel):
+        coluna, linha, celula = self.get_movivel_info(movivel)
+        aceitar = False
+        if celula is not None and celula != 2:
+            aceitar = True
+            self.comer_pontinho(movivel)
+            self.checar_esquina(movivel)
+        movivel.notificar(aceitar)
 
     def verificar_movimento(self):
         for movivel in self.moviveis:
-            coluna, linha = movivel.get_pos()
-            celula = self.get_celula(coluna, linha)
-            aceitar = False
-            if celula is not None and celula != 2:
-                aceitar = True
-                # Comer pontinhos apenas se for o Pacman
-                if isinstance(movivel, Pacman) and celula == 1:
-                    self.cenario[int(linha)][int(coluna)] = 0
-
-                # Verificar se chegou em uma esquina
-                direcoes = self.checar_esquina(coluna, linha)
-                movivel.esquina(direcoes)
-            movivel.notificar(aceitar)
+            self.verificar_movivel(movivel)
 
     def adicionar_movivel(self, obj):
         self.moviveis.append(obj)
