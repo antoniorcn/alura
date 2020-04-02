@@ -1,0 +1,222 @@
+import pygame
+from abc import ABCMeta, abstractmethod
+pygame.init()
+screen = pygame.display.set_mode((800, 600), 0)
+AMARELO = (255, 255, 0)
+PRETO = (0, 0, 0)
+AZUL = (0, 0, 255)
+VELOCIDADE = 0.5
+
+
+class ElementoJogo(metaclass=ABCMeta):
+    @abstractmethod
+    def pintar(self, tela, tamanho):
+        pass
+
+    @abstractmethod
+    def calcular_regras(self):
+        pass
+
+    @abstractmethod
+    def processar_eventos(self, eventos):
+        pass
+
+
+class Validador(metaclass=ABCMeta):
+    @abstractmethod
+    def validar(self, elemento):
+        return True
+
+
+class Validavel(metaclass=ABCMeta):
+    @abstractmethod
+    def get_linha(self):
+        pass
+
+    @abstractmethod
+    def get_coluna(self):
+        pass
+
+    @abstractmethod
+    def aceitar(self):
+        pass
+
+
+class Cenario(ElementoJogo, Validador):
+    def __init__(self):
+        self.cenario = [
+            [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+            [2, 1, 1, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 1, 1, 2],
+            [2, 1, 2, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 2, 1, 2],
+            [2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2],
+            [2, 1, 1, 1, 1, 2, 1, 2, 2, 1, 2, 1, 1, 1, 1, 2],
+            [2, 2, 2, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 2, 2, 2],
+            [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2],
+            [2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2],
+            [2, 1, 1, 1, 1, 1, 2, 0, 0, 2, 1, 1, 1, 1, 1, 2],
+            [2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2],
+            [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2],
+            [2, 2, 2, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 2, 2, 2],
+            [2, 1, 1, 1, 1, 2, 1, 2, 2, 1, 2, 1, 1, 1, 1, 2],
+            [2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2],
+            [2, 1, 2, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 2, 1, 2],
+            [2, 1, 1, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 1, 1, 2],
+            [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+        ]
+
+    def pintar_linha(self, linha_id, linha, tela, ppc):
+        for coluna_id, coluna in enumerate(linha):
+            cor = PRETO
+            x_initial = coluna_id * ppc
+            y_initial = linha_id * ppc
+            if self.cenario[linha_id][coluna_id] == 2:
+                cor = AZUL
+            bloco = pygame.Rect((x_initial, y_initial), (ppc, ppc))
+            pygame.draw.rect(tela, cor, bloco, 0)
+
+            if self.cenario[linha_id][coluna_id] == 1:
+                x_middle = x_initial + ppc // 2
+                y_middle = y_initial + ppc // 2
+                raio = ppc // 10
+                pygame.draw.circle(tela, AMARELO, (x_middle, y_middle), raio, 0)
+
+    def pintar(self, tela, ppc):
+        for linha_id, linha in enumerate(self.cenario):
+            self.pintar_linha(linha_id, linha, tela, ppc)
+
+    def calcular_regras(self):
+        pass
+
+    def processar_eventos(self, eventos):
+        for evento in eventos:
+            if evento.type == pygame.QUIT:
+                exit()
+
+    def validar(self, elemento):
+        coluna = elemento.get_coluna()
+        linha = elemento.get_linha()
+        celula = self.cenario[linha][coluna]
+        if celula != 2:
+            elemento.aceitar()
+
+
+class Pacman(ElementoJogo, Validavel):
+    def __init__(self):
+        self.x = 1
+        self.y = 1
+        self.velx = 0
+        self.vely = 0
+        self.x_temp = self.x
+        self.y_temp = self.y
+
+    def calcular_regras(self):
+        self.x_temp = self.x + self.velx
+        self.y_temp = self.y + self.vely
+
+    def pintar(self, tela, tamanho):
+        # Desenha o pacman
+        px = round(self.x) * tamanho
+        py = round(self.y) * tamanho
+        corpo_x = round(px) + (tamanho // 2)
+        corpo_y = round(py) + (tamanho // 2)
+        corpo_raio = tamanho // 2
+        pygame.draw.circle(tela, AMARELO, (corpo_x, corpo_y), corpo_raio, 0)
+
+        # Desenha o recorte da boca
+        boca_labio_inferior = (px + tamanho, corpo_y)
+        boca_fundo = (corpo_x, corpo_y)
+        boca_labio_superior = (px + tamanho, py)
+
+        polygon = [boca_fundo, boca_labio_inferior, boca_labio_superior]
+        pygame.draw.polygon(tela, PRETO, polygon, 0)
+
+        # Desenha o olho
+        olho_x = round(px + tamanho // 1.7)
+        olho_y = round(py + tamanho / 5)
+        olho_raio = tamanho // 10
+        pygame.draw.circle(tela, PRETO, (olho_x, olho_y), olho_raio, 0)
+
+    def processar_eventos(self, eventos):
+        for evento in eventos:
+            if evento.type == pygame.QUIT:
+                exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_DOWN:
+                    self.vely = VELOCIDADE
+                elif evento.key == pygame.K_UP:
+                    self.vely = -VELOCIDADE
+                elif evento.key == pygame.K_LEFT:
+                    self.velx = -VELOCIDADE
+                elif evento.key == pygame.K_RIGHT:
+                    self.velx = VELOCIDADE
+            if evento.type == pygame.KEYUP:
+                if evento.key == pygame.K_DOWN:
+                    self.vely = 0.0
+                elif evento.key == pygame.K_UP:
+                    self.vely = 0.0
+                elif evento.key == pygame.K_LEFT:
+                    self.velx = 0.0
+                elif evento.key == pygame.K_RIGHT:
+                    self.velx = 0.0
+
+    def aceitar(self):
+        self.x = self.x_temp
+        self.y = self.y_temp
+
+    def get_coluna(self):
+        return round(self.x_temp)
+
+    def get_linha(self):
+        return round(self.y_temp)
+
+
+class Jogo:
+    def __init__(self):
+        pygame.init()
+        self.elementos = []
+        self.validador = None
+        self.tela = pygame.display.set_mode((800, 640), 0)
+        self.PPC = (640 // 16) - 2
+
+    def set_validador(self, validador):
+        self.validador = validador
+
+    def adicionar_elemento(self, elemento):
+        self.elementos.append(elemento)
+
+    def remover_elemento(self, elemento):
+        self.elementos.remove(elemento)
+
+    def calcular_regras(self):
+        for elemento in self.elementos:
+            elemento.calcular_regras()
+            if self.validador is not None and isinstance(elemento, Validavel):
+                self.validador.validar(elemento)
+
+    def pintar(self):
+        self.tela.fill(PRETO)
+        for elemento in self.elementos:
+            elemento.pintar(self.tela, self.PPC)
+        pygame.display.update()
+
+    def processar_eventos(self):
+        eventos = pygame.event.get()
+        for elemento in self.elementos:
+            elemento.processar_eventos(eventos)
+
+    def loop_jogo(self):
+        while True:
+            self.calcular_regras()
+            self.pintar()
+            self.processar_eventos()
+
+
+if __name__ == "__main__":
+    jogo = Jogo()
+    cenario = Cenario()
+    pacman = Pacman()
+
+    jogo.adicionar_elemento(cenario)
+    jogo.adicionar_elemento(pacman)
+    jogo.set_validador(cenario)
+    jogo.loop_jogo()

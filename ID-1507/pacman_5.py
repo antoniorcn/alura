@@ -58,7 +58,6 @@ class Cenario(ElementoJogo):
         # Estados possiveis 0-Jogando 1-Pausado 2-GameOver  3-Vitoria
         self.estado = 0
         self.tamanho = tamanho
-        self.vidas = 5
         self.matriz = [
             [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
             [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2],
@@ -94,12 +93,10 @@ class Cenario(ElementoJogo):
     def adicionar_movivel(self, obj):
         self.moviveis.append(obj)
 
-    def pintar_score(self, tela):
+    def pintar_pontos(self, tela):
         pontos_x = self.tamanho * 30
         pontos_img = font.render("Score {}".format(self.pontos), True, AMARELO)
-        vidas_img = font.render("Vidas {}".format(self.vidas), True, AMARELO)
         tela.blit(pontos_img, (pontos_x, 50))
-        tela.blit(vidas_img, (pontos_x, 100))
 
     def pintar_linha(self, tela, numero_linha, linha):
         for numero_coluna, coluna in enumerate(linha):
@@ -145,7 +142,7 @@ class Cenario(ElementoJogo):
     def pintar_jogando(self, tela):
         for numero_linha, linha in enumerate(self.matriz):
             self.pintar_linha(tela, numero_linha, linha)
-        self.pintar_score(tela)
+        self.pintar_pontos(tela)
 
     def get_direcoes(self, linha, coluna):
         direcoes = []
@@ -183,13 +180,8 @@ class Cenario(ElementoJogo):
             if len(direcoes) >= 3:
                 movivel.esquina(direcoes)
             if isinstance(movivel, Fantasma) and movivel.linha == self.pacman.linha and \
-                    movivel.coluna == self.pacman.coluna:
-                self.vidas -= 1
-                if self.vidas <= 0:
-                    self.estado = 2
-                else:
-                    self.pacman.linha = 1
-                    self.pacman.coluna = 1
+                movivel.coluna == self.pacman.coluna:
+                self.estado = 2
             else:
                 if 0 <= col_intencao < 28 and 0 <= lin_intencao < 29 and \
                         self.matriz[lin_intencao][col_intencao] != 2:
@@ -226,8 +218,6 @@ class Pacman(ElementoJogo, Movivel):
         self.raio = self.tamanho // 2
         self.coluna_intencao = self.coluna
         self.linha_intencao = self.linha
-        self.abertura = 0
-        self.velocidade_abertura = 1
 
     def calcular_regras(self):
         self.coluna_intencao = self.coluna + self.vel_x
@@ -239,16 +229,10 @@ class Pacman(ElementoJogo, Movivel):
         # Desenhar o corpo do Pacman
         pygame.draw.circle(tela, AMARELO, (self.centro_x, self.centro_y), self.raio, 0)
 
-        self.abertura += self.velocidade_abertura
-        if self.abertura > self.raio:
-            self.velocidade_abertura = -1
-        if self.abertura <= 0:
-            self.velocidade_abertura = 1
-
         # Desenho da boca do Pacman
         canto_boca = (self.centro_x, self.centro_y)
-        labio_superior = (self.centro_x + self.raio, self.centro_y - self.abertura)
-        labio_inferior = (self.centro_x + self.raio, self.centro_y + self.abertura)
+        labio_superior = (self.centro_x + self.raio, self.centro_y - self.raio)
+        labio_inferior = (self.centro_x + self.raio, self.centro_y)
         pontos = [canto_boca, labio_superior, labio_inferior]
         pygame.draw.polygon(tela, PRETO, pontos, 0)
 
