@@ -62,6 +62,7 @@ class Cenario(ElementoJogo, ValidadorMovivel):
         self.moviveis = []
         self.pontos = 0
         self.tamanho = tamanho
+        self.estado = 1
         self.matriz = [
             [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
             [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2],
@@ -160,6 +161,47 @@ class Cenario(ElementoJogo, ValidadorMovivel):
         self.moviveis.append(obj)
 
 
+class EventBehaviour(metaclass=ABCMeta):
+    @abstractmethod
+    def processa_evento(self, elemento_jogo, event):
+        pass
+
+class SoltarTecla(EventBehaviour):
+    def processa_evento(self, elemento_jogo, event):
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_RIGHT:
+                elemento_jogo.vel_x = 0
+            elif event.key == pygame.K_LEFT:
+                elemento_jogo.vel_x = 0
+            elif event.key == pygame.K_UP:
+                elemento_jogo.vel_y = 0
+            elif event.key == pygame.K_DOWN:
+                elemento_jogo.vel_y = 0
+
+class PressionarTecla(EventBehaviour):
+    def processa_evento(self, elemento_jogo, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RIGHT:
+                elemento_jogo.vel_x = VELOCIDADE
+            elif event.key == pygame.K_LEFT:
+                elemento_jogo.vel_x = -VELOCIDADE
+            elif event.key == pygame.K_UP:
+                elemento_jogo.vel_y = -VELOCIDADE
+            elif event.key == pygame.K_DOWN:
+                elemento_jogo.vel_y = VELOCIDADE
+
+class PressionarTeclaRapido(EventBehaviour):
+    def processa_evento(self, elemento_jogo, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RIGHT:
+                elemento_jogo.vel_x = VELOCIDADE * 2
+            elif event.key == pygame.K_LEFT:
+                elemento_jogo.vel_x = -VELOCIDADE * 2
+            elif event.key == pygame.K_UP:
+                elemento_jogo.vel_y = -VELOCIDADE * 2
+            elif event.key == pygame.K_DOWN:
+                elemento_jogo.vel_y = VELOCIDADE * 2
+
 class Pacman(ElementoJogo, Movivel):
     def __init__(self, tamanho):
         self.coluna = 1
@@ -172,6 +214,10 @@ class Pacman(ElementoJogo, Movivel):
         self.raio = self.tamanho // 2
         self.coluna_intencao = self.coluna
         self.linha_intencao = self.linha
+        self.event_rules = []
+
+    def add_event_rule(self, event_rule):
+        self.event_rules.append(event_rule)
 
     def calcular_regras(self):
         self.coluna_intencao = self.coluna + self.vel_x
@@ -198,24 +244,8 @@ class Pacman(ElementoJogo, Movivel):
 
     def processar_eventos(self, eventos):
         for e in eventos:
-            if e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_RIGHT:
-                    self.vel_x = VELOCIDADE
-                elif e.key == pygame.K_LEFT:
-                    self.vel_x = -VELOCIDADE
-                elif e.key == pygame.K_UP:
-                    self.vel_y = -VELOCIDADE
-                elif e.key == pygame.K_DOWN:
-                    self.vel_y = VELOCIDADE
-            elif e.type == pygame.KEYUP:
-                if e.key == pygame.K_RIGHT:
-                    self.vel_x = 0
-                elif e.key == pygame.K_LEFT:
-                    self.vel_x = 0
-                elif e.key == pygame.K_UP:
-                    self.vel_y = 0
-                elif e.key == pygame.K_DOWN:
-                    self.vel_y = 0
+            for event_rule in self.event_rules:
+                event_rule.processa_evento(self, e)
 
     def aceitar_movimento(self):
         self.linha = self.linha_intencao
@@ -299,6 +329,12 @@ class Fantasma(ElementoJogo, Movivel):
 if __name__ == "__main__":
     size = 600 // 30
     pacman = Pacman(size)
+
+    evento_soltar_tecla = SoltarTecla()
+    evento_pressionar_tecla = PressionarTecla()
+    pacman.add_event_rule(evento_soltar_tecla)
+    pacman.add_event_rule(evento_pressionar_tecla)
+
     blinky = Fantasma(VERMELHO, size)
     inky = Fantasma(CIANO, size)
     clyde = Fantasma(LARANJA, size)
