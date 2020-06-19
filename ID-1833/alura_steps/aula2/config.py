@@ -1,0 +1,7 @@
+import pygame
+
+WIDTH = 800
+HEIGHT = 400
+PRETO = (0, 0, 0)
+CENTRO_X_TELA = WIDTH // 2
+CENTRO_Y_TELA = HEIGHT // 2
