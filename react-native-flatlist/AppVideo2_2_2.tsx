@@ -1,0 +1,100 @@
+import { Button, ScrollView, Text, TextInput, View } from 'react-native';
+import { estilos } from './styles/estilos';
+import Contato from './Contato';
+import { useState } from 'react';
+import { FontAwesome as Icon} from '@expo/vector-icons';
+
+interface ContatoDetalheProps { 
+  contato : Contato;
+  onEditar : ( contato : Contato ) => void
+  onApagar : ( id : number ) => void
+}
+
+const ContatoDetalhe : React.FC<ContatoDetalheProps> = ( { contato, onEditar, onApagar } ) => { 
+  return (
+    <View key={"item-"+ contato.id} style={[estilos.secondaryContainer, {flexDirection: "row", justifyContent: "space-between"}]}>
+      <View style={{flex: 4}}>
+        <Text style={estilos.title}>{contato.nome}</Text>
+        <Text>{contato.telefone}</Text>
+        <Text>{contato.email}</Text>
+      </View>
+      <View style={{flex: 1, flexDirection: "row", justifyContent: "space-around"}}>
+        <Icon name="edit" size={32} color="black" onPress={()=>onEditar( contato )}/>
+        <Icon name="trash" size={32} color="black" onPress={()=>onApagar( contato.id )}/>
+      </View>
+    </View>
+  )
+}
+
+export default function AppVideo1_2_2() {
+
+  const [lista, setLista] = useState<Array<Contato>> ([
+    {id: 1, nome:"João Silva", telefone: "(11) 1111-1111", email: "joao@teste.com"},
+    {id: 2, nome:"Maria Silva", telefone: "(11) 2222-2222", email: "maria@teste.com"},
+    {id: 3, nome:"Jose Santos", telefone: "(11) 3333-3333", email: "jose@teste.com"},
+    {id: 4, nome:"Marta Gonçalves", telefone: "(11) 4444-4444", email: "marta@teste.com"},
+    {id: 5, nome:"João Silva", telefone: "(11) 1111-1111", email: "joao@teste.com"},
+    {id: 6, nome:"Maria Silva", telefone: "(11) 2222-2222", email: "maria@teste.com"},
+    {id: 7, nome:"Jose Santos", telefone: "(11) 3333-3333", email: "jose@teste.com"},
+    {id: 8, nome:"Marta Gonçalves", telefone: "(11) 4444-4444", email: "marta@teste.com"},
+    {id: 9, nome:"João Silva", telefone: "(11) 1111-1111", email: "joao@teste.com"},
+    {id: 10, nome:"Maria Silva", telefone: "(11) 2222-2222", email: "maria@teste.com"},
+    {id: 11, nome:"Jose Santos", telefone: "(11) 3333-3333", email: "jose@teste.com"},
+    {id: 12, nome:"Marta Gonçalves", telefone: "(11) 4444-4444", email: "marta@teste.com"}
+  ]);
+
+  const [filtroNome, setFiltroNome] = useState<string>("");
+
+  const [id, setId] = useState<number | null>( null );
+  const [nome, setNome] = useState<string>("");
+  const [telefone, setTelefone] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [idCounter, setIdCounter] = useState<number>(13);
+
+  const editar = ( contato : Contato ) => {
+    setId( contato.id )
+    setNome( contato.nome )
+    setTelefone( contato.telefone )
+    setEmail( contato.email )
+  }
+
+  const apagar = ( id : number ) => {
+    setLista(  lista.filter( (item) => item.id != id ) )
+  }
+
+  const salvar = () => {
+    if (id == null) {
+      setLista( [...lista, 
+        {id: idCounter, nome, telefone, email}
+      ]);
+      setIdCounter( value => value + 1 )
+    } else { 
+      setLista( lista.map( item => item.id != id ? item : {id, nome, telefone, email}) )
+    }
+
+  }
+
+  const listaVisual = lista
+                        .filter((item : Contato)=>item.nome.includes( filtroNome))
+                        .map((item : Contato, idx : number)=>
+                              <ContatoDetalhe contato = {item} onEditar={editar} onApagar={apagar}/>)
+
+  return(
+    <View style={estilos.container}>
+      <View style={{flex: 2, justifyContent: "space-between"}}>
+        <TextInput style={estilos.textInput} placeholder="Nome:" value={nome} onChangeText={setNome}/>
+        <TextInput style={estilos.textInput} placeholder="Telefone:" value={telefone} onChangeText={setTelefone}/>
+        <TextInput style={estilos.textInput} placeholder="Email:" value={email} onChangeText={setEmail}/>
+        <Button title="Salvar" onPress={salvar} />
+      </View>
+      <View style={{flex: 1, justifyContent: "space-between"}}>
+        <TextInput style={estilos.textInput} placeholder="Filtro:" value={filtroNome} onChangeText={setFiltroNome}/>
+      </View>
+      <View style={{flex: 8}}>
+        <ScrollView horizontal={false}>
+          {listaVisual}
+        </ScrollView>
+      </View>
+    </View>
+  )
+}
