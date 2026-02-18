@@ -34,10 +34,10 @@ export const AppVideo3_2_1 : React.FC<AppVideo3_2_1Props> = () => {
   
 
   const contatos : Contato[] = [
-    {id: 1, nome:"João Silva", telefone: "(11) 1111-1111", email: "joao@teste.com"},
-    {id: 2, nome:"Maria Silva", telefone: "(11) 2222-2222", email: "maria@teste.com"},
-    {id: 3, nome:"Jose Santos", telefone: "(11) 3333-3333", email: "jose@teste.com"},
-    {id: 4, nome:"Marta Gonçalves", telefone: "(11) 4444-4444", email: "marta@teste.com"}
+    {id: 1, nome:"João Silva", telefone: "1111-1111", email: "joao@teste.com"},
+    {id: 2, nome:"Maria Silva", telefone: "2222-2222", email: "maria@teste.com"},
+    {id: 3, nome:"Jose Santos", telefone: "3333-3333", email: "jose@teste.com"},
+    {id: 4, nome:"Marta Gonçalves", telefone: "4444-4444", email: "marta@teste.com"}
   ];
 
   const [lista, setLista] = useState<Contato[]>([]);

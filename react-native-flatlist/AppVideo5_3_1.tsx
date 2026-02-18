@@ -1,5 +1,5 @@
 import { Button, FlatList, ListRenderItemInfo, ScrollView, Text, TextInput, View } from 'react-native';
-import { estilos } from './styles/estilos';
+import { tema,  estilos } from './styles/estilos';
 import Contato from './Contato';
 import { useEffect, useRef, useState } from 'react';
 import { FontAwesome as Icon} from '@expo/vector-icons';
@@ -14,14 +14,14 @@ const ContatoDetalhe : React.FC<ContatoDetalhesProps>= ( props ) => {
   return (
     <View key={"item-"+ item.id} style={[estilos.secondaryContainer, {flexDirection: "row", justifyContent: "space-between"}]}>
       <View style={{flex: 4}}>
-        <Text style={estilos.title}>{`${item.nome} - ${item.id}`}</Text>
-        <Text>{item.telefone}</Text>
-        <Text>{item.email}</Text>
+        <Text style={estilos.title}>{`${item.nome}`}</Text>
+        <Text style={estilos.body}>{item.telefone}</Text>
+        <Text style={estilos.body}>{item.email}</Text>
       </View>
-      <View style={{flex: 1, flexDirection: "row", justifyContent: "space-around"}}>
-        <Icon name="edit" size={32} color="black" onPress={()=>props.onEditar( item )}/>
-        <Icon name="trash" size={32} color="black" onPress={()=>props.onApagar( item.id )}/>
-      </View>
+      {/* <View style={{flex: 1, flexDirection: "row", justifyContent: "space-around"}}>
+        <Icon name="edit" size={32} color={tema.onSecondaryContainer} onPress={()=>props.onEditar( item )}/>
+        <Icon name="trash" size={32} color={tema.onSecondaryContainer} onPress={()=>props.onApagar( item.id )}/>
+      </View> */}
     </View>
   )
 }
@@ -51,10 +51,10 @@ const EmptyList = () => (
 export default function AppVideo5_3_1() {
 
   const contatos : Contato[] = [
-    {id: 1, nome:"João Silva", telefone: "(11) 1111-1111", email: "joao@teste.com"},
-    {id: 2, nome:"Maria Silva", telefone: "(11) 2222-2222", email: "maria@teste.com"},
-    {id: 3, nome:"Jose Santos", telefone: "(11) 3333-3333", email: "jose@teste.com"},
-    {id: 4, nome:"Marta Gonçalves", telefone: "(11) 4444-4444", email: "marta@teste.com"}
+    {id: 1, nome:"João Silva", telefone: "1111-1111", email: "joao@teste.com"},
+    {id: 2, nome:"Maria Silva", telefone: "2222-2222", email: "maria@teste.com"},
+    {id: 3, nome:"Jose Santos", telefone: "3333-3333", email: "jose@teste.com"},
+    {id: 4, nome:"Marta Gonçalves", telefone: "4444-4444", email: "marta@teste.com"}
   ];
 
   const [lista, setLista] = useState<Contato[]>([]);
@@ -74,8 +74,8 @@ export default function AppVideo5_3_1() {
 
   return (
     <View style={{flex: 1}}>
-      <View style={{flex: 1}}>
-        <Text>Controles</Text>
+      {/* <View style={{flex: 1}}>
+        <Text style={[estilos.body]}>Controles</Text>
         <Button title="Ir para o indice 50" onPress={()=>{
           flatListRef.current.scrollToIndex( {
             index: 50,
@@ -89,9 +89,17 @@ export default function AppVideo5_3_1() {
             animated: true,
           } );
         }} />
-      </View>
+      </View> */}
       <View style={{flex: 4}}>
         <FlatList  ref={flatListRef}
+              style={{flex: 1}}
+              data={lista}
+              renderItem={flatProps =><ContatoDetalhe {...flatProps} 
+                                                      onEditar={()=>{}} 
+                                                      onApagar={()=>{}}/>}
+              keyExtractor={ item => `contato-${item.id}`}
+        />
+        {/* <FlatList  ref={flatListRef}
               style={{flex: 1}}
               data={lista}
               ListHeaderComponent={ListaHeader}
@@ -101,7 +109,8 @@ export default function AppVideo5_3_1() {
                                                       onEditar={()=>{}} 
                                                       onApagar={()=>{}}/>}
               keyExtractor={ item => `contato-${item.id}`}
-        />
+        /> */}
+
       </View>
     </View>
   );

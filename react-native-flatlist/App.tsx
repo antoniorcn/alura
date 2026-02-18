@@ -6,7 +6,7 @@ import AppVideo5_3_1 from './AppVideo5_3_1';
 export default function App() {
   return (
     <View style={estilos.container}>
-      <Text>5.3.1</Text>
+      {/* <Text style={[estilos.body]}>5.3.1</Text> */}
       <AppVideo5_3_1/>
     </View>
   );

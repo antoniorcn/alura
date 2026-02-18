@@ -25,7 +25,13 @@ const estilos = StyleSheet.create({
     },
     title : {
         fontSize: 16,
-        fontWeight: "bold"
+        fontWeight: "bold",
+        color: tema.onSecondaryContainer
+    },
+    body : {
+        fontSize: 12,
+        fontWeight: "normal",
+        color: tema.onSecondaryContainer       
     },
     textInput : { 
         backgroundColor: tema.surfaceDim,
@@ -35,16 +41,18 @@ const estilos = StyleSheet.create({
         borderBottomColor: tema.onSurface
     },
     header: {
-        backgroundColor: "lightyellow",
+        backgroundColor: tema.onPrimary,
         padding: 30,
         alignItems: "center",
+        color: tema.onPrimaryContainer
     },
     headerText: {
         fontSize: 32,
         fontWeight: "bold",
+        color: tema.onPrimaryContainer
     },
     flatListContainer: {
-        borderColor: "red",
+        borderColor: tema.onSecondary,
         borderWidth: 3,
         marginBottom: 10
     },
@@ -52,16 +60,17 @@ const estilos = StyleSheet.create({
         marginHorizontal: 5,
         marginVertical: 10,
         borderTopWidth: 2,
-        borderTopColor: "black"
+        borderTopColor: tema.onSecondary
     },
     footer: {
-        backgroundColor: "lightyellow",
+        backgroundColor: tema.primary,
         padding: 20,
         alignItems: "flex-end",
     },
     footerText: {
         fontSize: 16,
         fontStyle: "italic",
+        color: tema.onPrimaryContainer
     },
 })
-export { estilos }
+export { tema, estilos }
